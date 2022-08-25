@@ -1,0 +1,6 @@
+day 1:
+all functions except topple were created
+
+day 2: 
+the logic behind the function topple was added, various edits for bugs,
+ensuring that there blocks for no arguments passed on command line
