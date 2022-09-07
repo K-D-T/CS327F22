@@ -1,0 +1,26 @@
+Project should meet specs
+By Kenyon...
+I have to start pushing this to git more often, I haven't generated a proper changelog. So I'll give an approximate breakdown
+
+What was completed day 1?
+
+Constants for size of the field,
+structs for door(exits)
+struct for map, holds char field, and doors
+struct for location of pokemart & pokemon center
+build borders, print function, init field
+create exit, initially just placed them in array, but changed to add them to struct to save time later
+validatelocation to stop collision of pokemart/pokecenter
+build pokestructs to build the locations
+
+What was completed  Day2
+buildLongGrass designed and test randomly generate the location and ensure
+isthereSpace, checks to ensure there is no collision with other objects
+isEnoughSpace, a redundant function to do the same thing as isThereSpace but with a different structure
+
+
+Lost track of Day to Day additions
+generatePaths used to create paths, while
+additionalPaths adds connections to markets and centers
+buildTerrain create additional trees and boulders
+buildclearings used to fill up the map 
