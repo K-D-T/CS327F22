@@ -1,34 +1,53 @@
-Assign 1.01
-Started 8/30/22
+Assign 1.02
+Started 9/07/22
 
-Struct for doors, represents an x, y location
+Program runs on main.c, functions.c, and functions.h
+Mostly the same information from README.MD 1.01, but there were some upgrades.
 
-struct for pokeloci, could be used for clearings, pokecenter, pokemart, and longgrass
+Struct for worldMapLoc, helps to track where the pointers for a location go.
+Added in a struct data element for worldMapLoc in map struct, which contains data for specific map
 
-struct for map, holds all data to ensure everything is accessible from a single location, doors, locations, char field itself, number of clearings, long grass, and a boulder-tree ratio
+struct for worldMap, a 2-d 401 X 401 array of pointers 
 
-buildBorders function- creates the outside border of '%' from given struct.
+createExit needed to be updated to stop seg fault, based on edge cases where there wasno more data to pull from.
 
-print function - outputs the char map from given struct.
+generateWorldMap, allocates enough memory for 401 x 401 pointers to maps, also initializes the first map and sets all border maps to NULL
 
-initField - set given char array to  empty spaces  - ' '.
+moveMap, single movement function, takes direction as input and moves in the corresponding location, can build new maps, find old ones
 
-createExit - randomly generates x,y to place '#' in given char array
+jumpToMap, takes the input that a player would input(both x and y must be between -200 - 200) 
 
-buildPokeStructs - creates either pokemart, or pokecenter based on switch
+play, takes the worldmap *, and current map, starts at (0,0) -> (200,200) lets player, choose a direction, jump to x,y, or quit. BE AWARE!!!***!!!! 
+ (I'm using standard x,y)
 
-validateLocation - checks to see if there is enough room for either pokemart or pokecenter based on struct
+"f -200 -200" , I should be in the uppermost left corner (0,0)
 
-buildLongGrass - creates fields of long grass based on the input of given struct
+"f -200 200", I should be in the uppermost right corner (0,400)
 
-isThereSpace - return 1 if there's enough space to place pokeloci
+"f 200 -200", I should be in the lowest left corner (400,0)
 
-isEnoughSpace - redundant function that returns 1 if there's enough space to place pokeloci
+"f 200 200", I should be in the lowest right corner (400, 400)
 
-buildClearings - place the clearings if there is space.
+I'f a player wants to go to 200,200 (400,400) they would have to enter that.
 
-buildTerrain - finish placing items on the map, randomly generated as a ratio of trees to boulders.
+if we start at
+(0,0) (Internally (200,200)). go north, we should be at (-1,0) (Internally (199,200))
 
-generatePaths - generates paths to north/south exits & west/east exits, a switch designates direction 1, being N/S, 0 being W/E
+if we start at
 
-additionalPaths - generates paths to pokeloci, starts in upper left space of pokeloci
+(0,0) (Internally (200,200)) go south, we should be at (1,0) (Internally (201,200))
+
+if we start at
+
+(0,0) (Internally (200,200)) go west, we should be at (0,-1) (Internally (200,199))
+
+if we start at
+
+(0,0) (Internally (200,200)) go east, we should be at (0,1) (Internally (200,201))
+
+
+whichDirection, takes a string as input, parses and figures out if the information is incorrect, a direction, a place to jump to, or to quit.
+
+grantMap, a function to hold all functions, I got tired of writing the same thing down over and over, so we take directions to create exits
+
+probPlacement, used to determine if a pokemart/center should be placed in the map, used a random float, instead of random int to determine. 

@@ -12,22 +12,11 @@ int main(int argc, char* argv[]){
 	time_t t; 
 	srand((unsigned) time(&t));
 	
-	struct map go;
-	//memset(ind, -1, sizeof(ind));
-	initField(&go);
-	buildBorders(&go);
-	createExit(&go);
-	generatePaths(&go, go.north, go.south,1);
-	generatePaths(&go, go.west, go.east, 0);
-	buildPokeStructs(&go,0);
-	buildPokeStructs(&go,1);
-	additionalPaths(&go, go.pokemart);
-	additionalPaths(&go, go.pokecenter);
-	buildLongGrass(&go);
-	buildClearings(&go);
-	buildTerrain(&go);
-	//aStar(&go);
-	print(&go);
+	
+	struct worldMap* wm = malloc(sizeof(struct worldMap)); 
+	struct map* m = malloc(sizeof(struct map));
+	generateWorldMap(wm, m);
+	play(wm,m);
 	
 	return 0;
 }

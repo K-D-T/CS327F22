@@ -7,6 +7,11 @@ struct door{
 	int doorX;
 	int doorY;
 };
+//struct for location inside of 401 X 401 array of pointers
+struct worldMapLoc{
+	int mapX;
+	int mapY;
+};
 
 //struct to represent various terrain information and pokemarts/centers
 struct pokeloci{
@@ -30,6 +35,16 @@ struct map{
 	int longGrassPatches;
 	int clearingCount;
 	int boulderTree;
+	struct worldMapLoc w;
+	struct map* northMap;
+	struct map* eastMap;
+	struct map* southMap;
+	struct map* westMap;
+
+};
+
+struct worldMap{
+	struct map* wm[401][401];
 };
 
 //function to build the border around the map
@@ -39,7 +54,7 @@ void print(struct map* m);
 //create empty spaces in map
 void initField(struct map* m);
 //design each exit on the map
-void createExit(struct map* m);
+void createExit(struct map* m, int north, int east, int south, int west);
 
 // second variable works as a switch and changes what's output, if s = 0 then it's a center
 // if s = 1 then it's a mart
@@ -63,3 +78,17 @@ void buildTerrain(struct map* m);
 void generatePaths(struct map* m,struct door src, struct door dest, int s);
 //function to connect p
 void additionalPaths(struct map* m, struct pokeloci p);
+//function to create a 400 x 400 array of pointers that can access the map
+void generateWorldMap(struct worldMap* m, struct map* sm);
+//function used to shift to a specific map, by taking a direction
+void moveMap(struct worldMap* m, struct map* curr, struct map* next, char dir);
+// function takes an x,y location to jump to specific map
+void jumpToMap(struct worldMap* m, int x, int y);
+//function with that takes user input and determines what's next
+void play(struct worldMap* m, struct map* map);
+//parse a string to see if it's valid input
+int whichDirection(char buffer[]);
+//function to hold functions to generate new maps, its tiresome rewriting it all over
+void grantMap(struct worldMap* wm, struct map* m, int n, int s, int e, int w);
+//function to determine if pokemart/pokecenter should be generated
+int probPlacement(struct map* m);
