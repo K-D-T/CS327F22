@@ -1,0 +1,9 @@
+2022-08-25 | Files for third assignment
+2022-09-14 | New update 9/14/22
+2022-09-18 | day1 added pc struct, char and location PlacePC function,
+ tosses the PC on a road.
+2022-09-20 | created struct for node to hold the Q,
+After going through several iterations, I decided to go with a mergesort to rearrange my linked list insted of Q;
+2022-09-22 | Needed to change algorithm, ran into issues with homemade sort, finished mergesort and corrected the problem. Completed problem
+
+
