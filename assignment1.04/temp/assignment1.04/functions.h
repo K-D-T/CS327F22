@@ -24,6 +24,13 @@ struct Node{
 	struct Node* next;
 };
 
+struct Element{
+	char c;// value
+	int time;// value to decrease every deque
+	int n;// where it's located in trainer array
+	struct Element* next;
+};
+
 //struct for location inside of 401 X 401 array of pointers
 struct worldMapLoc{
 	int mapX;
@@ -61,6 +68,9 @@ struct map{
 	struct map* westMap;
 	struct character pc;
 	struct character trainers[13];
+	char trainerTemp[13];
+	int trainerCount;
+	int trainerDirection[13];
 
 };
 
@@ -142,3 +152,15 @@ void movePC(struct map* m);
 int validPCMove(struct map*m, int x, int y);
 //function to move PC and replace tile with previous char
 char pcMovement(struct map* m, int x, int y, int s, char p);
+//function to build trainers from given input
+void createTrainers(struct map* m, int n);
+//function to randomly place the trainers
+void placeTrainers(struct map* m, char c, int n);
+//function to move each type of trainer
+void moveTrainers(struct map* m, char c, int n);
+//function to move the trainer and grab the char of previous location
+char trainerMovement(struct map* m, int x, int y, int f_x, int f_y, int n, char p);
+//function to check for objects 0 means shouldn't move there
+int freeLoc(struct map* m, int x, int y);
+//function to check direction for dijkstra moving chars; return the direction
+void rivalCaught(struct map* m, int n);

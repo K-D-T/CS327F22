@@ -1,0 +1,10 @@
+2022-10-27 | Files for seventh assignment
+2022-10-28 | day1
+2022-10-30 | Built classes for all nine files 
+2022-11-01 | built csvparse and csvparseaux
+2022-11-02 | built isnumber
+2022-11-02 | bug that caused stoi error, try/catch implemented for pokemon_species/moves
+2022-11-02 | bug located that prints out duplicate items using pushback results in two duplicate elements?
+2022-11-03 | Couldn't find glitch
+
+

@@ -1,0 +1,9 @@
+2022-08-25 | Files for fourth assignment
+2022-09-29 |day1
+built trainers array to contain all info & integer to keep count
+built 3 functions to control the random movement of the PC, movePC, validPCMove, checks to see if the location is correct char, and pcMovement, moves the character and replaces the previous destination 
+2022-09-30 | Built containers for trainers, former location chars, direction of trainers 
+2022-10-01 |functions to handle randomized pc movement and check location
+2022-10-02 | Built functions for trainers movement 
+
+

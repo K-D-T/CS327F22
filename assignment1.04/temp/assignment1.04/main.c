@@ -18,14 +18,6 @@ int main(int argc, char* argv[]){
 	generateWorldMap(wm, m);
 	//play(wm,m);
 	
-	grantMap(wm,m,1,1,1,1);
-	placePC(m);
-	print(m);
-	//printf("This is a hiker map.\n");
-	dijkstra(m, m->pc.x, m->pc.y, 0);
-	//printf("This is a rival map.\n");
-	dijkstra(m, m->pc.x, m->pc.y, 1);
-	
 	if(argc == 3){
 		if(strcmp(argv[1],"--numtrainers") == 0){
 			trainers = atoi(argv[2]);
@@ -35,11 +27,29 @@ int main(int argc, char* argv[]){
 				printf("There are %d trainers.\n",trainers);
 			}
 			printf("Format correct, there are %d trainers.\n", trainers);
-		}
-	}else{
+			}else if(trainers > 13 || trainers < 0){
+				printf("Too many or too little trainers generated, we'll generate a reasonable number for you.\n");
+				trainers = (rand() % (13 - 7  + 1)) + 7;
+				printf("There are %d trainers.\n", trainers);
+			}
+		}else{
 		trainers = (rand() % (13 - 7 + 1)) + 7;
 		printf("No errors, no value specified, %d trainers\n", trainers);
 	}
+
+	grantMap(wm,m,1,1,1,1);
+	placePC(m);
+	createTrainers(m,trainers);
+	print(m);
+	movePC(m);
+	//usleep(60000);
+	
+
+	//}
+	//printf("This is a hiker map.\n");
+	//dijkstra(m, m->pc.x, m->pc.y, 0);
+	//printf("This is a rival map.\n");
+	//dijkstra(m, m->pc.x, m->pc.y, 1);
 
 	return 0;
 }

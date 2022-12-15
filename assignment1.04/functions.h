@@ -24,6 +24,19 @@ struct Node{
 	struct Node* next;
 };
 
+struct Element{
+	char c;// value
+	int time;// value to decrease every deque
+	int n;// where it's located in trainer array
+	int t_cost;//terrain cost
+	int f_x; // from location x
+	int f_y; /// from location y
+	int t_x; // new location x
+	int t_y; // new location y
+	char p; // former char found in trainertemp[n]
+	struct Element* next;
+};
+
 //struct for location inside of 401 X 401 array of pointers
 struct worldMapLoc{
 	int mapX;
@@ -61,6 +74,11 @@ struct map{
 	struct map* westMap;
 	struct character pc;
 	struct character trainers[13];
+	char trainerTemp[13];
+	int trainerCount;
+	int trainerDirection[13];
+	struct Element* pq;
+	char tempPC;
 
 };
 
@@ -142,3 +160,35 @@ void movePC(struct map* m);
 int validPCMove(struct map*m, int x, int y);
 //function to move PC and replace tile with previous char
 char pcMovement(struct map* m, int x, int y, int s, char p);
+//function to build trainers from given input
+void createTrainers(struct map* m, int n);
+//function to randomly place the trainers
+void placeTrainers(struct map* m, char c, int n);
+//function to move each type of trainer
+void moveTrainers(struct map* m, char c, int n);
+//function to move the trainer and grab the char of previous location
+void trainerMovement(struct map* m, int x, int y, int f_x, int f_y, int n, char p);
+//function to check for objects 0 means shouldn't move there
+int freeLoc(struct map* m, int x, int y);
+//function to check direction for dijkstra moving chars; return the direction
+void rivalCaught(struct map* m, int n);
+
+struct Element* eCreate(int n, char c, int f_x, int f_y, int x, int y, char p, int t_cost, int time);
+
+void ePush(struct Element** head, int n, char c, int f_x, int f_y, int x, int y, char p, int t_cost, int time);
+
+struct Element* ePop(struct Element** head);
+
+int isEEmpty(struct Element** e);
+
+void decreaseTime(struct Element** head, int sub);
+
+struct Element* eSortedMerge(struct Element* a, struct Element* b);
+
+void eFrontBackSplit(struct Element* src, struct Element** fRef, struct Element** bRef);
+
+void eMergeSort(struct Element** head);
+
+int distMove(struct map* m, int x, int y, char c);
+
+void turnControl(struct map* m);

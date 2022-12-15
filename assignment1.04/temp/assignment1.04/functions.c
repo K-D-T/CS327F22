@@ -360,7 +360,8 @@ void print(struct map* m){
 		}
 		printf("\n");
 	}
-	printf("Current map location: (%d , %d)\n", m->w.mapX-200, m->w.mapY-200);
+	printf("\n");
+	//printf("Current map location: (%d , %d)\n", m->w.mapX-200, m->w.mapY-200);
 }
 
 void buildBorders(struct map* m){
@@ -378,7 +379,9 @@ void additionalPaths(struct map* m, struct pokeloci p){
 	for(int i = x; i > 0; i--,c++){
 		if(m->field[i][y] == '#'){
 			for(int j = x; q < c; j--, q++){
-				if(m->field[j][y] != 'M' && m->field[j][y] != 'C')
+				if(m->field[j][y] != 'M' && m->field[j][y] != 'C'
+					&& m->field[j][y] != '.'
+					&& m->field[j][y] != ':')
 					m->field[j][y] = '#';
 			}
 			break;
@@ -390,7 +393,9 @@ void additionalPaths(struct map* m, struct pokeloci p){
 	for(int i = y; i < 79 ; i++, c++){
 		if(m->field[x][i] == '#'){
 			for(int k = y;r < c; k++, r++){
-				if(m->field[x][k] != 'M' && m->field[x][k] != 'C')
+				if(m->field[x][k] != 'M' && m->field[x][k] != 'C'
+					&& m->field[x][k] != '.' 
+					&& m->field[x][k] != ':')
 					m->field[x][k] = '#';
 			}
 			break;
@@ -402,7 +407,9 @@ void additionalPaths(struct map* m, struct pokeloci p){
 	for(int i = x; i < 20; i++,c++){
 		if(m->field[i][y] == '#'){
 			for(int j = x; h < c; j++, h++){
-				if(m->field[j][y] != 'M'  && m->field[j][y] != 'C')
+				if(m->field[j][y] != 'M'  && m->field[j][y] != 'C'
+					&& m->field[j][y] != '.' 
+					&& m->field[j][y] != ':')
 					m->field[j][y] = '#';
 			}
 			break;
@@ -414,7 +421,9 @@ void additionalPaths(struct map* m, struct pokeloci p){
 	for(int l = y; l > 0; l--,c++){
 		if(m->field[x][l] == '#'){
 			for(int d = y; f < c; y--,f++ ){
-				if(m->field[x][d] != 'M' && m->field[x][d] != 'C')
+				if(m->field[x][d] != 'M' && m->field[x][d] != 'C'
+					&& m->field[x][d] != '.' 
+					&& m->field[x][d] != ':')
 					m->field[x][d] = '#';
 			}
 			break;
@@ -744,6 +753,11 @@ void grantMap(struct worldMap* wm, struct map* m, int n, int s, int e, int w){
 		}
 		buildLongGrass(m);
 		buildClearings(m);
+		for(int i = 0; i < m->longGrassPatches; i++)
+			additionalPaths(m,m->longGrass[i]);
+
+		for(int j = 0; j < m->clearingCount; j++)
+			additionalPaths(m,m->clearings[j]);
 		buildTerrain(m);
 
 		if(m->w.mapX == 0)
@@ -783,12 +797,16 @@ void dijkstra(struct map* m, int src_x, int src_y, int s){
 		for(int j = 0; j < Y; j++){
 			if(i == src_x && j == src_y){
 			}
-			else if(m->field[i][j] != '%' && m->field[i][j] != '^'){
+			else if(m->field[i][j] != '%' && m->field[i][j] != '^'){ 
 				distance[i][j] = INT_MAX;
 				push(&pq,i,j,INT_MAX);
 			}
-			if(m->field[i][j] == '^' ||
-					m->field[i][j] == '%'){
+			if(m->field[i][j] == '^' || m->field[i][j] == '%'
+					|| m->field[i][j] == '@'
+					|| m->field[i][j] == 'p'
+					|| m->field[i][j] == 'w'
+					|| m->field[i][j] == 'e'
+					|| m->field[i][j] == 's'){
 				visited[i][j] = 1;
 				distance[i][j] = INT_MAX;
 			}
@@ -915,18 +933,19 @@ void dijkstra(struct map* m, int src_x, int src_y, int s){
 	for(int i = 0; i < X; i++){
 		for(int j = 0; j < Y; j++){
 			if(m->field[i][j] != '^' && m->field[i][j] != '%'
-			  && distance[i][j] >= 0){
-				printf("%d ",distance[i][j] % 100);
+					&& distance[i][j] >= 0){
+				//printf("%d ",distance[i][j] % 100);
 			}else{
-				printf("  ");
+				//printf("  ");
 			}
 			if(s == 0){//hiker
 				m->hikerCost[i][j] = distance[i][j];
 			}else if(s == 1){//rival
 				m->rivalCost[i][j] = distance[i][j];
+				//printf("%d ",m->rivalCost[i][j]);
 			}
 		}
-		printf("\n");
+		//printf("\n");
 	}
 }
 
@@ -1055,15 +1074,16 @@ void mergesort(struct Node** head){
 	*head = sortedMerge(a,b);
 }
 
-void MovePC(struct map* m){
+void movePC(struct map* m){
 	//we know the first move we need to place a '#' down from previous loc
 	int start = 0;
 	int direction = 0;
-	int valid = 0;
+	int valid = 0, i = 0;
 	char temp = ' ';
 	char curr = ' ';
-	while(direction = 0){
+	while(direction == 0){
 		direction = rand() % (8 - 1 + 1) + 1;
+		valid = 0;
 		while(valid == 0){
 			//up 1, left 1
 			if(direction == 1){
@@ -1155,13 +1175,36 @@ void MovePC(struct map* m){
 					start++;
 				}
 			}
+			if(valid == 1){
+				dijkstra(m, m->pc.x, m->pc.y, 0);
+				dijkstra(m, m->pc.x, m->pc.y, 1);
+				for(i = 0; i < m->trainerCount; i++){
+					if(m->trainers[i].piece == 'r'){
+						moveTrainers(m,'r',i);
+					}
+					if(m->trainers[i].piece == 'p'){
+						moveTrainers(m,'p',i);	
+					}
+					if(m->trainers[i].piece == 'w'){
+						moveTrainers(m,'w',i);
+					}
+					if(m->trainers[i].piece == 'e'){
+						moveTrainers(m,'e',i);
+					}
+					if(m->trainers[i].piece == 'h'){
+						moveTrainers(m,'h',i);
+					}
+				}
+				print(m);
+				usleep(600000);
+			}
+			direction = rand() % (8 - 1 + 1) + 1;
 			valid = 0;
 		}
-		direction = 0;
 	}
 }
 int validPCMove(struct map* m, int x, int y){
-	if(x < 0 || x > 20 || y < 0 || y > 79)
+	if(x <= 0 || x >= 20 || y <= 0 || y >= 79)
 		return 0;
 	if(m->field[x][y] == '.' || m->field[x][y] == ':'
 			|| m->field[x][y] == 'M' || m->field[x][y] == 'C'
@@ -1173,15 +1216,556 @@ int validPCMove(struct map* m, int x, int y){
 char pcMovement(struct map* m, int x, int y, int s, char p){
 	char c; 
 	int f_x = 0, f_y = 0;
-		c = m->field[x][y];
-		f_x = m->pc.x;
-		f_y = m->pc.y;
-		m->field[x][y] = m->pc.piece;
-		m->pc.x = x;
-		m->pc.y = y;
-		if(s == 0)
-			m->field[f_x][f_y] = '#';
-		else
-			m->field[f_x][f_y] = p;
+	c = m->field[x][y];
+	f_x = m->pc.x;
+	f_y = m->pc.y;
+	m->field[x][y] = '@';
+	m->pc.x = x;
+	m->pc.y = y;
+	if(s == 0)
+		m->field[f_x][f_y] = '#';
+	else
+		m->field[f_x][f_y] = p;
 	return c;
 }
+
+char trainerMovement(struct map* m, int x, int y, int f_x, int f_y, int n, char p){
+	char c; 
+	c = m->field[x][y];
+
+	m->trainers[n].x = x;
+	m->trainers[n].y = y;
+
+	m->field[x][y] = m->trainers[n].piece;
+	m->field[f_x][f_y] = p;
+	return c;
+
+}
+
+void createTrainers(struct map* m, int n){
+	int count = 0, p = 0;
+	m->trainerCount = n;
+	while(p < n){
+		if(count == 0){
+			struct character c;
+			c.piece = 'h';
+			m->trainers[p] = c;
+			placeTrainers(m,c.piece,p);
+		}else if(count == 1){
+			struct character c;
+			c.piece = 'r';
+			m->trainers[p] = c;
+			placeTrainers(m,c.piece,p);
+		}else if(count == 2){
+			struct character c;
+			c.piece = 'p';
+			m->trainers[p] = c;
+			placeTrainers(m,c.piece,p);
+		}else if(count == 3){
+			struct character c;
+			c.piece = 'w';
+			m->trainers[p] = c;
+			placeTrainers(m,c.piece,p);
+		}else if(count == 4){
+			struct character c;
+			c.piece = 's';
+			m->trainers[p] = c;
+			placeTrainers(m,c.piece,p);
+		}else if(count == 5){
+			struct character c;
+			c.piece = 'e';
+			m->trainers[p] = c;
+			placeTrainers(m,c.piece,p);
+		}
+	
+		p++;
+		count++;
+		if(count == 6)
+			count = 0;
+	}
+
+}
+
+void placeTrainers(struct map* m, char c, int n){
+	int x = 0, y = 0;
+	if(c == 'h' || c == 'r' || c == 's'|| c == 'p' || c == 'e'){
+		while((x == 0 && y == 0) || m->hikerCost[x][y] < 0 || 
+				(m->field[x][y] != '.' && m->field[x][y] != ':'
+				 && m->field[x][y] != '#' && m->field[x][y] != 'C'
+				 && m->field[x][y] != 'M')){
+			x = rand() % (19 - 1 + 1) + 1;
+			y = rand() % (78 - 1 + 1) + 1;
+		}
+	}
+	else if(c =='w'){
+		while((x == 0 && y == 0) || (m->field[x][y] != '.' 
+					&& m->field[x][y] != ':' 
+					&& m->field[x][y] != 'C'
+					&& m->field[x][y] != 'M')){
+			x = rand() % (19 - 1 + 1) + 1;
+			y = rand() % (78 - 1 + 1) + 1;
+		}
+	}
+
+	m->trainerTemp[n] = m->field[x][y];
+	m->field[x][y] = c;
+	m->trainers[n].x = x;
+	m->trainers[n].y = y;
+	m->trainers[n].piece = c;
+}
+void moveTrainers(struct map* m, char c, int n){
+	int p_d = 0, s_d = 0, e_d = 0, h_d = 0, r_d = 0, w_d = 0;
+	int valid = 0;
+	char temp = ' ';
+	int i = -1, w_to = 100000, flag = 0;
+	struct character ch = m->trainers[n];
+	//pacers
+	if(c == 'p'){
+		//1 is north, 2 is east, 3 is south,4 is west
+		if(m->trainerDirection[n] == 0){
+			m->trainerDirection[n] = rand()%(4 - 1 + 1) + 1;
+			while(valid == 0){
+				if(m->trainerDirection[n] == 1){
+					i = freeLoc(m,ch.x-1,ch.y);
+					if (i == 0){
+						m->trainerDirection[n] = rand() % (4-1+1) + 1;
+					}else if(i == 1){
+						valid = 1;
+					}
+				}
+				if(m->trainerDirection[n] == 2){
+					i = freeLoc(m,ch.x,ch.y+1);
+					if(i == 0){
+						m->trainerDirection[n] = rand() % (4-1+1) + 1;
+					}else if(i == 1){
+						valid = 1;
+					}
+				}
+				if(m->trainerDirection[n] == 3){
+					i = freeLoc(m,ch.x+1,ch.y);
+					if(i == 0){
+						m->trainerDirection[n] = rand() % (4-1+1) + 1;
+					}else if(i == 1){
+						valid = 1;
+					}
+				}
+				if(m->trainerDirection[n] == 4){
+					i = freeLoc(m,ch.x,ch.y-1);
+					if(i == 0){
+						m->trainerDirection[n] = rand() % (4-1+1) + 1;
+					}else if(i == 1){
+						valid = 1;
+					}
+				}
+			}
+		}
+		if(m->trainerDirection[n] == 1){
+			i = freeLoc(m,ch.x-1,ch.y);
+			if(i == 1 && ch.x-1 > 1){
+				temp = m->trainerTemp[n];
+				temp = trainerMovement(m,ch.x-1,ch.y,ch.x,ch.y,n,temp);
+				m->trainerTemp[n] = temp;
+				ch.x = ch.x-1;
+				m->trainers[n].x = ch.x;
+
+			}else{
+				m->trainerDirection[n] = 3;
+			}	
+		} if(m->trainerDirection[n] == 2){
+			i = freeLoc(m,ch.x,ch.y+1);
+			if(i == 1 && ch.y+1 < 79){
+				temp = m->trainerTemp[n];
+				temp = trainerMovement(m,ch.x,ch.y+1,ch.x,ch.y,n,temp);
+				m->trainerTemp[n] = temp;
+				ch.y = ch.y+1;
+				m->trainers[n].y = ch.y;
+
+			}else{
+				m->trainerDirection[n] = 4;
+			}	
+		} if(m->trainerDirection[n] == 3){
+			i = freeLoc(m,ch.x+1,ch.y);
+			if(i == 1 && ch.x+1 < 20){
+				temp = m->trainerTemp[n];
+				temp = trainerMovement(m,ch.x+1,ch.y,ch.x,ch.y,n,temp);
+				m->trainerTemp[n] = temp;
+				ch.x = ch.x+1;
+				m->trainers[n].x = ch.x;
+			}else{
+				m->trainerDirection[n] = 1;
+			}
+		} if(m->trainerDirection[n] == 4){
+			i = freeLoc(m,ch.x,ch.y-1);
+			if(i == 1 && ch.y-1 > 0){
+				temp = m->trainerTemp[n];
+				temp = trainerMovement(m,ch.x,ch.y-1,ch.x,ch.y,n,temp);
+				m->trainerTemp[n] = temp;
+				ch.y = ch.y-1;
+				m->trainers[n].y = ch.y;
+			}else{
+				m->trainerDirection[n] = 2;
+			}
+		}
+	}
+	else if(c == 'w'){
+		valid = 0;
+		if(m->trainerDirection[n] == 0){
+			m->trainerDirection[n] = rand() % (4 - 1 + 1) + 1;
+		}
+		while(valid == 0){
+			if(m->trainerDirection[n] == 1){
+				if(m->field[ch.x-1][ch.y] == m->trainerTemp[n]){
+					temp = m->trainerTemp[n];
+					temp = trainerMovement(m,ch.x-1,ch.y,ch.x,ch.y,n,temp);
+					ch.x = ch.x-1;
+					m->trainers[n].x = ch.x;
+					valid = 1;
+				}else{
+					m->trainerDirection[n] = rand() % (4 - 1 + 1) + 1;
+				}
+			}
+			else if(m->trainerDirection[n] == 2){
+				if(m->field[ch.x][ch.y+1] == m->trainerTemp[n]){
+					temp = m->trainerTemp[n];
+					temp = trainerMovement(m,ch.x,ch.y+1,ch.x,ch.y,n,temp);
+					ch.y = ch.y+1;
+					m->trainers[n].y = ch.y;
+					valid = 1;
+				}else{
+					m->trainerDirection[n] = rand() % (4 - 1 + 1) + 1;
+				}
+			}
+			else if(m->trainerDirection[n] == 3){
+				if(m->field[ch.x+1][ch.y] == m->trainerTemp[n]){
+					temp = m->trainerTemp[n];
+					temp = trainerMovement(m,ch.x+1,ch.y,ch.x,ch.y,n,temp);
+					ch.x = ch.x+1;
+					m->trainers[n].x = ch.x;
+					valid = 1;
+				}else{
+					m->trainerDirection[n] = rand() % (4 - 1 + 1) + 1;
+				}
+			}
+			else if(m->trainerDirection[n] == 4){
+				if(m->field[ch.x][ch.y-1] == m->trainerTemp[n]){
+					temp = m->trainerTemp[n];
+					temp = trainerMovement(m,ch.x,ch.y-1,ch.x,ch.y,n,temp);
+					ch.y = ch.y-1;
+					m->trainers[n].y = ch.y;
+					valid = 1;
+				}else{
+					m->trainerDirection[n] = rand() % (4 - 1 + 1) + 1;	
+				}
+			}
+		}	
+	}
+	else if(c == 'e'){
+		valid = 0;
+		if(m->trainerDirection[n] == 0){
+			m->trainerDirection[n] = rand() % (4 - 1 + 1) + 1;
+		}
+		while(valid == 0){
+			if(m->trainerDirection[n] == 1){
+				i = freeLoc(m,ch.x-1,ch.y);
+				if(i == 1){
+					temp = m->trainerTemp[n];
+					temp = trainerMovement(m,ch.x-1,ch.y,ch.x,ch.y,n,temp);
+					m->trainerTemp[n] = temp;
+					ch.x = ch.x-1;
+					m->trainers[n].x = ch.x;
+					valid = 1;
+				}else{
+					
+					m->trainerDirection[n] = rand() % (4-1+1)+1;
+				}
+			}
+			else if(m->trainerDirection[n] == 2){
+				i = freeLoc(m,ch.x,ch.y+1);
+				if(i == 1){
+					temp = m->trainerTemp[n];
+					temp = trainerMovement(m,ch.x,ch.y+1,ch.x,ch.y,n,temp);
+					m->trainerTemp[n] = temp;
+					ch.y = ch.y+1;
+					m->trainers[n].y = ch.y;
+					valid = 1;
+				}else{
+					m->trainerDirection[n] = rand() % (4-1+1)+1;
+				}
+			}
+			else if(m->trainerDirection[n] == 3){
+				i = freeLoc(m,ch.x+1,ch.y);
+				if(i == 1){
+					temp = m->trainerTemp[n];
+					temp = trainerMovement(m,ch.x+1,ch.y,ch.x,ch.y,n,temp);
+					m->trainerTemp[n] = temp;
+					ch.x = ch.x+1;
+					m->trainers[n].x = ch.x;
+					valid = 1;
+				}else{
+					m->trainerDirection[n] = rand() % (4-1+1)+1;
+				}
+			}
+			else if(m->trainerDirection[n] == 4){
+				i = freeLoc(m,ch.x,ch.y-1);
+				if(i == 1){
+					temp = m->trainerTemp[n];
+					temp = trainerMovement(m,ch.x,ch.y-1,ch.x,ch.y,n,temp);
+					m->trainerTemp[n] = temp;
+					ch.y = ch.y-1;
+					m->trainers[n].y = ch.y;
+					valid = 1;
+				}else{
+					m->trainerDirection[n] = rand() % (4-1+1)+1;
+				}
+			}
+		}
+	}
+	else if(c == 'r'){
+		if(ch.x-1 > 0 && ch.y-1 > 0 && w_to > m->rivalCost[ch.x-1][ch.y-1]
+				&& freeLoc(m,ch.x-1,ch.y-1) == 1){
+			w_to = m->rivalCost[ch.x-1][ch.y-1];
+			flag = 1;
+		}
+		if(ch.x-1 > 0 && w_to > m->rivalCost[ch.x-1][ch.y]
+				&& freeLoc(m,ch.x-1,ch.y) == 1){
+			w_to = m->rivalCost[ch.x-1][ch.y];
+			flag = 2;
+		}
+		if(ch.x-1 > 0 && ch.y+1 < 79 && w_to > m->rivalCost[ch.x-1][ch.y+1]
+				&& freeLoc(m,ch.x-1,ch.y+1) == 1){
+			w_to = m->rivalCost[ch.x-1][ch.y+1];
+			flag = 3;
+		}
+		if(ch.y+1 < 79 && w_to > m->rivalCost[ch.x][ch.y+1]
+				&& freeLoc(m,ch.x,ch.y+1) == 1){
+			w_to = m->rivalCost[ch.x][ch.y+1];
+			flag = 4;
+		}
+		if(ch.x+1 < 20 && ch.y+1 < 79 && w_to > m->rivalCost[ch.x+1][ch.y+1]
+				&& freeLoc(m,ch.x+1,ch.y+1) == 1){
+			w_to = m->rivalCost[ch.x+1][ch.y+1];
+			flag = 5;
+		}
+		if(ch.x+1 < 20 && w_to > m->rivalCost[ch.x+1][ch.y]
+				&& freeLoc(m,ch.x+1,ch.y) == 1){
+			w_to = m->rivalCost[ch.x+1][ch.y];
+			flag = 6;
+		}
+		if(ch.x+1 < 20 && ch.y-1 > 0 && w_to > m->rivalCost[ch.x+1][ch.y-1]
+				&& freeLoc(m,ch.x+1,ch.y-1) == 1){
+			w_to = m->rivalCost[ch.x+1][ch.y-1];
+			flag = 7;
+		}
+		if(ch.y-1 > 0 && w_to > m->rivalCost[ch.x][ch.y-1]
+				&& freeLoc(m,ch.x,ch.y-1) == 1){
+			w_to = m->rivalCost[ch.x][ch.y-1];
+			flag = 8;
+		}
+
+		if(flag == 1){
+			temp = m->trainerTemp[n];
+			temp = trainerMovement(m,ch.x-1,ch.y-1,ch.x,ch.y,n,temp);
+			m->trainerTemp[n] = temp;
+		
+			m->trainers[n].y = ch.y-1;
+			m->trainers[n].x = ch.x-1;
+			//rivalCaught(m,n);
+
+		}else if(flag == 2){
+			temp = m->trainerTemp[n];
+			temp = trainerMovement(m,ch.x-1,ch.y,ch.x,ch.y,n,temp);
+			m->trainerTemp[n] = temp; 
+		
+			m->trainers[n].x = ch.x-1;
+			//rivalCaught(m,n);
+
+		}else if(flag == 3){
+			temp = m->trainerTemp[n];
+			temp = trainerMovement(m,ch.x-1,ch.y+1,ch.x,ch.y,n,temp);
+			m->trainerTemp[n] = temp;
+	
+			m->trainers[n].x = ch.x-1;
+			m->trainers[n].y = ch.y+1;
+			//rivalCaught(m,n);
+
+		}else if(flag == 4){
+			temp = m->trainerTemp[n];
+			temp = trainerMovement(m,ch.x,ch.y+1,ch.x,ch.y,n,temp);
+			m->trainerTemp[n] = temp;
+			
+			m->trainers[n].y = ch.y+1;
+			//rivalCaught(m,n);
+
+		}else if(flag == 5){
+			temp = m->trainerTemp[n];
+			temp = trainerMovement(m,ch.x+1,ch.y+1,ch.x,ch.y,n,temp);
+			m->trainerTemp[n] = temp;
+			
+			m->trainers[n].x = ch.x+1;
+			m->trainers[n].y = ch.y+1;
+			//rivalCaught(m,n);
+
+		}else if(flag == 6){
+			temp = m->trainerTemp[n];
+			temp = trainerMovement(m,ch.x+1,ch.y,ch.x,ch.y,n,temp);
+			m->trainerTemp[n] = temp;
+			
+			m->trainers[n].x = ch.x+1;
+			//rivalCaught(m,n);
+
+		}else if(flag == 7){
+			temp = m->trainerTemp[n];
+			temp = trainerMovement(m,ch.x+1,ch.y-1,ch.x,ch.y,n,temp);
+			m->trainerTemp[n] = temp;
+			
+			m->trainers[n].x = ch.x+1;
+			m->trainers[n].y = ch.y-1;
+			//rivalCaught(m,n);
+
+		}else if(flag == 8){
+			temp = m->trainerTemp[n];
+			temp = trainerMovement(m,ch.x,ch.y-1,ch.x,ch.y,n,temp);
+			m->trainerTemp[n] = temp;
+			
+			m->trainers[n].y = ch.y-1;
+			//rivalCaught(m,n);
+		}
+	}
+
+	else if(c == 'h'){
+		if(ch.x-1 > 0 && ch.y-1 > 0 && w_to > m->hikerCost[ch.x-1][ch.y-1]
+				&& freeLoc(m,ch.x-1,ch.y-1) == 1){
+			w_to = m->hikerCost[ch.x-1][ch.y-1];
+			flag = 1;
+		}
+		if(ch.x-1 > 0 && w_to > m->hikerCost[ch.x-1][ch.y]
+				&& freeLoc(m,ch.x-1,ch.y) == 1){
+			w_to = m->hikerCost[ch.x-1][ch.y];
+			flag = 2;
+		}
+		if(ch.x-1 > 0 && ch.y+1 < 79 && w_to > m->hikerCost[ch.x-1][ch.y+1]
+				&& freeLoc(m,ch.x-1,ch.y+1) == 1){
+			w_to = m->hikerCost[ch.x-1][ch.y+1];
+			flag = 3;
+		}
+		if(ch.y+1 < 79 && w_to > m->hikerCost[ch.x][ch.y+1]
+				&& freeLoc(m,ch.x,ch.y+1) == 1){
+			w_to = m->hikerCost[ch.x][ch.y+1];
+			flag = 4;
+		}
+		if(ch.x+1 < 20 && ch.y+1 < 79 && w_to > m->hikerCost[ch.x+1][ch.y+1]
+				&& freeLoc(m,ch.x+1,ch.y+1) == 1){
+			w_to = m->hikerCost[ch.x+1][ch.y+1];
+			flag = 5;
+		}
+		if(ch.x+1 < 20 && w_to > m->hikerCost[ch.x+1][ch.y]
+				&& freeLoc(m,ch.x+1,ch.y) == 1){
+			w_to = m->hikerCost[ch.x+1][ch.y];
+			flag = 6;
+		}
+		if(ch.x+1 < 20 && ch.y-1 > 0 && w_to > m->hikerCost[ch.x+1][ch.y-1]
+				&& freeLoc(m,ch.x+1,ch.y-1) == 1){
+			w_to = m->hikerCost[ch.x+1][ch.y-1];
+			flag = 7;
+		}
+		if(ch.y-1 > 0 && w_to > m->hikerCost[ch.x][ch.y-1]
+				&& freeLoc(m,ch.x,ch.y-1) == 1){
+			w_to = m->hikerCost[ch.x][ch.y-1];
+			flag = 8;
+		}
+
+		if(flag == 1){
+			temp = m->trainerTemp[n];
+			temp = trainerMovement(m,ch.x-1,ch.y-1,ch.x,ch.y,n,temp);
+			m->trainerTemp[n] = temp;
+		
+			m->trainers[n].y = ch.y-1;
+			m->trainers[n].x = ch.x-1;
+			//rivalCaught(m,n);
+
+		}else if(flag == 2){
+			temp = m->trainerTemp[n];
+			temp = trainerMovement(m,ch.x-1,ch.y,ch.x,ch.y,n,temp);
+			m->trainerTemp[n] = temp; 
+		
+			m->trainers[n].x = ch.x-1;
+			//rivalCaught(m,n);
+
+		}else if(flag == 3){
+			temp = m->trainerTemp[n];
+			temp = trainerMovement(m,ch.x-1,ch.y+1,ch.x,ch.y,n,temp);
+			m->trainerTemp[n] = temp;
+	
+			m->trainers[n].x = ch.x-1;
+			m->trainers[n].y = ch.y+1;
+			//rivalCaught(m,n);
+
+		}else if(flag == 4){
+			temp = m->trainerTemp[n];
+			temp = trainerMovement(m,ch.x,ch.y+1,ch.x,ch.y,n,temp);
+			m->trainerTemp[n] = temp;
+			
+			m->trainers[n].y = ch.y+1;
+			//rivalCaught(m,n);
+
+		}else if(flag == 5){
+			temp = m->trainerTemp[n];
+			temp = trainerMovement(m,ch.x+1,ch.y+1,ch.x,ch.y,n,temp);
+			m->trainerTemp[n] = temp;
+			
+			m->trainers[n].x = ch.x+1;
+			m->trainers[n].y = ch.y+1;
+			//rivalCaught(m,n);
+
+		}else if(flag == 6){
+			temp = m->trainerTemp[n];
+			temp = trainerMovement(m,ch.x+1,ch.y,ch.x,ch.y,n,temp);
+			m->trainerTemp[n] = temp;
+			
+			m->trainers[n].x = ch.x+1;
+			//rivalCaught(m,n);
+
+		}else if(flag == 7){
+			temp = m->trainerTemp[n];
+			temp = trainerMovement(m,ch.x+1,ch.y-1,ch.x,ch.y,n,temp);
+			m->trainerTemp[n] = temp;
+			
+			m->trainers[n].x = ch.x+1;
+			m->trainers[n].y = ch.y-1;
+			//rivalCaught(m,n);
+
+		}else if(flag == 8){
+			temp = m->trainerTemp[n];
+			temp = trainerMovement(m,ch.x,ch.y-1,ch.x,ch.y,n,temp);
+			m->trainerTemp[n] = temp;
+			
+			m->trainers[n].y = ch.y-1;
+			//rivalCaught(m,n);
+		}
+	}
+}
+
+int freeLoc(struct map* m, int x, int y){
+	char c = m->field[x][y];
+	if(c == '^' || c == '%' || c == 'p' || c == '@' || c == 'w' || c == 'e' ||
+		       c == 's' || c == 'h' || c == 'r')
+		return 0;
+	if(x == 0 || x == 20 || y == 0 || y == 79)
+		return 0;
+	return 1;
+}
+
+void rivalCaught(struct map* m, int n){
+	if(abs(m->pc.x - m->trainers[n].x) == 1 && m->pc.y == m->trainers[n].y){
+		printf("Collision, match started!\n");
+		exit(1);
+	}
+	if(abs(m->pc.y - m->trainers[n].y) == 1 && m->pc.x == m->trainers[n].x){
+		printf("Collision, match started!\n");
+		exit(1);
+	}
+	if(abs(m->pc.x - m->trainers[n].x) == 1 && abs(m->pc.y - m->trainers[n].y) == 1){
+		printf("Collision, match started!\n");
+		exit(1);
+	}
+} 
